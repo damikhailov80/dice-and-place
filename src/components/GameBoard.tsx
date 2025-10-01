@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import styles from './GameBoard.module.css';
 import PlayerPanel from './PlayerPanel';
 
@@ -8,7 +8,6 @@ interface Cell {
   id: string;
   x: number;
   y: number;
-  value: number | null;
   player: number | null;
   isSelected: boolean;
 }
@@ -51,7 +50,6 @@ export default function GameBoard() {
           id: `${x}-${y}`,
           x,
           y,
-          value: null,
           player: null,
           isSelected: false,
         });
@@ -75,7 +73,7 @@ export default function GameBoard() {
     setCells(prevCells =>
       prevCells.map(cell =>
         cell.id === cellId
-          ? { ...cell, value: diceValues[0] + diceValues[1], player: currentPlayerId, isSelected: false }
+          ? { ...cell, player: currentPlayerId, isSelected: false }
           : { ...cell, isSelected: false }
       )
     );
@@ -107,32 +105,6 @@ export default function GameBoard() {
     setDiceValues([dice1, dice2]);
   };
 
-  // Функция для определения размера фигуры по значениям костей
-  const getFigureSize = (dice1: number, dice2: number) => {
-    return {
-      width: dice1,
-      height: dice2,
-    };
-  };
-
-  // Функция для проверки, можно ли разместить фигуру в указанной позиции
-  const canPlaceFigure = (startX: number, startY: number, width: number, height: number) => {
-    // Проверяем, что фигура помещается в границы поля
-    if (startY + height > GRID_SIZE || startX + width > GRID_SIZE) {
-      return false;
-    }
-
-    // Проверяем, что все клетки в области фигуры свободны
-    for (let y = startY; y < startY + height; y++) {
-      for (let x = startX; x < startX + width; x++) {
-        const cell = cells.find(c => c.x === x && c.y === y);
-        if (cell && cell.player !== null) {
-          return false;
-        }
-      }
-    }
-    return true;
-  };
 
   const figureShapes: FigureShape[] = [
     {
@@ -169,7 +141,6 @@ export default function GameBoard() {
     }
   ]
 
-  // Обработчик начала перетаскивания
   const handleMouseDown = (cellId: string, event: React.MouseEvent) => {
     if (!diceValues) return;
     
@@ -186,39 +157,52 @@ export default function GameBoard() {
     });
   };
 
-  // Обработчик отпускания мыши
   const handleMouseUp = () => {
-    if (!dragState.isDragging || !dragState.startCell || !dragState.figureShape) {
+    if (!dragState.isDragging || !dragState.startCell || !dragState.figureShape || !diceValues) {
       setDragState({
         isDragging: false,
         startCell: null,
         currentCell: null,
-        figureShape: figureShapes[0],
+        figureShape: null,
       });
       return;
     }
 
     const { startCell, figureShape } = dragState;
 
-    // if (canPlaceFigure(startCell.row, startCell.col, width, height)) {
-    //   // Размещаем фигуру от стартовой позиции
-    //   const newCells = [...cells];
-    //   for (let row = startCell.row; row < startCell.row + height; row++) {
-    //     for (let col = startCell.col; col < startCell.col + width; col++) {
-    //       const cellIndex = newCells.findIndex(c => c.row === row && c.col === col);
-    //       if (cellIndex !== -1) {
-    //         newCells[cellIndex] = {
-    //           ...newCells[cellIndex],
-    //           player: currentPlayerId,
-    //           value: diceValues![0] + diceValues![1],
-    //         };
-    //       }
-    //     }
-    //   }
-    //   setCells(newCells);
-    //   setDiceValues(null);
-    //   switchPlayer();
-    // }
+    if (canPlaceAtCurrentPosition()) {
+      const max = Math.max(diceValues[0], diceValues[1]) - 1;
+      const min = Math.min(diceValues[0], diceValues[1]) - 1;
+      const xDiff = (figureShape.size[0] === "max" ? max : min) * figureShape.direction[0];
+      const yDiff = (figureShape.size[1] === "max" ? max : min) * figureShape.direction[1];
+      
+      const endX = startCell.x + xDiff;
+      const endY = startCell.y + yDiff;
+      
+      const startX = Math.min(startCell.x, endX);
+      const startY = Math.min(startCell.y, endY);
+      const width = Math.abs(xDiff) + 1;
+      const height = Math.abs(yDiff) + 1;
+
+      setCells(prevCells => {
+        const newCells = [...prevCells];
+        for (let y = startY; y < startY + height; y++) {
+          for (let x = startX; x < startX + width; x++) {
+            const cellIndex = newCells.findIndex(c => c.x === x && c.y === y);
+            if (cellIndex !== -1) {
+              newCells[cellIndex] = {
+                ...newCells[cellIndex],
+                player: currentPlayerId,
+              };
+            }
+          }
+        }
+        return newCells;
+      });
+      
+      setDiceValues(null);
+      switchPlayer();
+    }
 
     setDragState({
       isDragging: false,
@@ -240,12 +224,11 @@ export default function GameBoard() {
 
   const currentPlayer = players.find(player => player.id === currentPlayerId);
 
-//   // Функция для определения стартовой позиции игрока
   const isStartPosition = (x: number, y: number, playerId: number) => {
     if (playerId === 1) {
-      return x === 0 && y === 0; // Верхняя левая клетка для игрока 1
+      return x === 0 && y === 0;
     } else if (playerId === 2) {
-      return x === GRID_SIZE - 1 && y === GRID_SIZE - 1; // Нижняя правая клетка для игрока 2
+      return x === GRID_SIZE - 1 && y === GRID_SIZE - 1;
     }
     return false;
   };
@@ -257,7 +240,7 @@ export default function GameBoard() {
     return num >= min && num <= max;
   }
 
-  const isInDragArea = (x: number, y: number) => {
+  const isInSelectedPlaceArea = (x: number, y: number) => {
     if (!dragState.isDragging || !dragState.startCell || !dragState.figureShape) return false;
     
     const { startCell, figureShape } = dragState;
@@ -273,9 +256,39 @@ export default function GameBoard() {
     return result;
   };
 
-  // Функция для проверки, можно ли разместить фигуру в текущей позиции
   const canPlaceAtCurrentPosition = () => {
-   return true;
+    if (!dragState.isDragging || !dragState.startCell || !dragState.figureShape || !diceValues) {
+      return false;
+    }
+
+    const { startCell, figureShape } = dragState;
+    const max = Math.max(diceValues[0], diceValues[1]) - 1;
+    const min = Math.min(diceValues[0], diceValues[1]) - 1;
+    const xDiff = (figureShape.size[0] === "max" ? max : min) * figureShape.direction[0];
+    const yDiff = (figureShape.size[1] === "max" ? max : min) * figureShape.direction[1];
+    
+    const endX = startCell.x + xDiff;
+    const endY = startCell.y + yDiff;
+    
+    if (endX >= GRID_SIZE || endY >= GRID_SIZE || endX < 0 || endY < 0) {
+      return false;
+    }
+
+    const startX = Math.min(startCell.x, endX);
+    const startY = Math.min(startCell.y, endY);
+    const width = Math.abs(xDiff) + 1;
+    const height = Math.abs(yDiff) + 1;
+
+    for (let y = startY; y < startY + height; y++) {
+      for (let x = startX; x < startX + width; x++) {
+        const cell = cells.find(c => c.x === x && c.y === y);
+        if (cell && cell.player !== null) {
+          return false;
+        }
+      }
+    }
+    
+    return true;
   };
 
   return (
@@ -292,29 +305,26 @@ export default function GameBoard() {
             {cells.map((cell) => {
               const isPlayer1Start = isStartPosition(cell.x, cell.y, 1);
               const isPlayer2Start = isStartPosition(cell.x, cell.y, 2);
-              const isInDrag = isInDragArea(cell.x, cell.y);
+              const isInSelectedPlace = isInSelectedPlaceArea(cell.x, cell.y);
               const canPlace = canPlaceAtCurrentPosition();
               
               return (
                 <div
                   key={cell.id}
                   className={`${styles.cell} ${
-                    cell.value ? styles.filled : ''
+                    cell.player ? styles.filled : ''
                   } ${cell.isSelected ? styles.selected : ''} ${
                     cell.player === 1 ? styles.player1 : cell.player === 2 ? styles.player2 : ''
                   } 
                   ${isPlayer1Start ? styles.possiblePosition1 : ''}
                   ${isPlayer2Start ? styles.possiblePosition2 : ''}
                    ${
-                    isInDrag ? (canPlace ? styles.dragAreaValid : styles.dragAreaInvalid) : ''
+                    isInSelectedPlace ? (canPlace ? styles.dragAreaValid : styles.dragAreaInvalid) : ''
                   }`}
                   onClick={() => handleCellClick(cell.id)}
                   onMouseEnter={() => handleCellEnter(cell.x, cell.y)}
                   onMouseDown={(e) => handleMouseDown(cell.id, e)}
                 >
-                  {cell.value && (
-                    <span className={styles.cellValue}>{cell.value}</span>
-                  )}
                 </div>
               );
             })}
