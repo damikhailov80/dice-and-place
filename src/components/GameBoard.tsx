@@ -3,38 +3,18 @@
 import { useState } from 'react';
 import styles from './GameBoard.module.css';
 import PlayerPanel from './PlayerPanel';
-
-interface Cell {
-  id: string;
-  x: number;
-  y: number;
-  player: number | null;
-  isSelected: boolean;
-}
-
-interface Player {
-  id: number;
-  name: string;
-  isActive: boolean;
-  color: string;
-}
-
-type Size = ["max", "min"] | ["min", "max"] | ["max", "max"] | ["min", "min"];
-type Direction = [-1, 1] | [1, -1] | [1, 1] | [-1, -1];
-type FigureShape = {
-    size: Size;
-    direction: Direction;
-  };
-
-
-interface PlaceState {
-  isPlacing: boolean;
-  startCell: Cell | null;
-  currentCell: Cell | null;
-  figureShape: FigureShape | null;
-}
-
-const GRID_SIZE = 15;
+import {
+  Cell,
+  Player,
+  PlaceState,
+  FigureShape,
+  figureShapes,
+  isStartPosition,
+  isInSelectedPlaceArea,
+  canPlaceAtCurrentPosition,
+  calculatePlacementArea,
+  createInitialCells
+} from '../utils/gameLogic';
 
 export default function GameBoard() {
   const [players, setPlayers] = useState<Player[]>([
@@ -42,21 +22,7 @@ export default function GameBoard() {
     { id: 2, name: 'Player 2', isActive: false, color: 'linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%)' }
   ]);
 
-  const [cells, setCells] = useState<Cell[]>(() => {
-    const initialCells: Cell[] = [];
-    for (let y = 0; y < GRID_SIZE; y++) {
-      for (let x = 0; x < GRID_SIZE; x++) {
-        initialCells.push({
-          id: `${x}-${y}`,
-          x,
-          y,
-          player: null,
-          isSelected: false,
-        });
-      }
-    }
-    return initialCells;
-  });
+  const [cells, setCells] = useState<Cell[]>(() => createInitialCells());
 
   const [diceValues, setDiceValues] = useState<[number, number] | null>(null);
   const [currentPlayerId, setCurrentPlayerId] = useState<number>(1);
@@ -89,11 +55,11 @@ export default function GameBoard() {
     const xDiff = x - startCell!.x;
     const yDiff = y - startCell!.y;
 
-    const size: Size = Math.abs(yDiff) > Math.abs(xDiff) ? ["min", "max"] : ["max", "min"];
-    const direction: Direction = [
+    const size = Math.abs(yDiff) > Math.abs(xDiff) ? ["min", "max"] as const : ["max", "min"] as const;
+    const direction = [
       xDiff === 0 ? 1 : (xDiff > 0 ? 1 : -1), 
       yDiff === 0 ? 1 : (yDiff > 0 ? 1 : -1)
-    ] as Direction;
+    ] as const;
     const figureShape:FigureShape = { size, direction };
 
     if (figureShape) {
@@ -106,40 +72,6 @@ export default function GameBoard() {
   };
 
 
-  const figureShapes: FigureShape[] = [
-    {
-        size: ["min", "max"],
-        direction: [1, -1]
-    },
-    {
-        size: ["max", "min"],
-        direction: [1, -1]
-    },
-    {
-        size: ["max", "min"],
-        direction: [1, 1]
-    },
-    {
-        size: ["min", "max"],
-        direction: [1, 1]
-    },
-    {   
-        size: ["min", "max"],
-        direction: [1, -1]
-    },
-    {
-        size: ["max", "min"],
-        direction: [1, -1]
-    },
-    {
-        size: ["max", "min"],
-        direction: [-1, -1]
-    },
-    {
-        size: ["min", "max"],
-        direction: [-1, -1]
-    }
-  ]
 
   const handleMouseDown = (cellId: string, event: React.MouseEvent) => {
     if (!diceValues) return;
@@ -170,19 +102,8 @@ export default function GameBoard() {
 
     const { startCell, figureShape } = placeState;
 
-    if (canPlaceAtCurrentPosition()) {
-      const max = Math.max(diceValues[0], diceValues[1]) - 1;
-      const min = Math.min(diceValues[0], diceValues[1]) - 1;
-      const xDiff = (figureShape.size[0] === "max" ? max : min) * figureShape.direction[0];
-      const yDiff = (figureShape.size[1] === "max" ? max : min) * figureShape.direction[1];
-      
-      const endX = startCell.x + xDiff;
-      const endY = startCell.y + yDiff;
-      
-      const startX = Math.min(startCell.x, endX);
-      const startY = Math.min(startCell.y, endY);
-      const width = Math.abs(xDiff) + 1;
-      const height = Math.abs(yDiff) + 1;
+    if (canPlaceAtCurrentPosition(placeState, diceValues, cells)) {
+      const { startX, startY, width, height } = calculatePlacementArea(startCell, diceValues, figureShape);
 
       setCells(prevCells => {
         const newCells = [...prevCells];
@@ -224,72 +145,6 @@ export default function GameBoard() {
 
   const currentPlayer = players.find(player => player.id === currentPlayerId);
 
-  const isStartPosition = (x: number, y: number, playerId: number) => {
-    if (playerId === 1) {
-      return x === 0 && y === 0;
-    } else if (playerId === 2) {
-      return x === GRID_SIZE - 1 && y === GRID_SIZE - 1;
-    }
-    return false;
-  };
-
-
-  const isBetween = (num: number, r1: number, r2: number) => {
-    const min = Math.min(r1, r2);
-    const max = Math.max(r1, r2);
-    return num >= min && num <= max;
-  }
-
-  const isInSelectedPlaceArea = (x: number, y: number) => {
-    if (!placeState.isPlacing || !placeState.startCell || !placeState.figureShape) return false;
-    
-    const { startCell, figureShape } = placeState;
-    const max = Math.max(diceValues![0], diceValues![1]) - 1;
-    const min = Math.min(diceValues![0], diceValues![1]) - 1;
-    const xDiff = (figureShape.size[0] === "max" ? max : min) * figureShape.direction[0];
-    const yDiff = (figureShape.size[1] === "max" ? max : min) * figureShape.direction[1];
-    
-
-    const result = isBetween(x, startCell.x, startCell.x + xDiff) && 
-           isBetween(y, startCell.y, startCell.y + yDiff);
-
-    return result;
-  };
-
-  const canPlaceAtCurrentPosition = () => {
-    if (!placeState.isPlacing || !placeState.startCell || !placeState.figureShape || !diceValues) {
-      return false;
-    }
-
-    const { startCell, figureShape } = placeState;
-    const max = Math.max(diceValues[0], diceValues[1]) - 1;
-    const min = Math.min(diceValues[0], diceValues[1]) - 1;
-    const xDiff = (figureShape.size[0] === "max" ? max : min) * figureShape.direction[0];
-    const yDiff = (figureShape.size[1] === "max" ? max : min) * figureShape.direction[1];
-    
-    const endX = startCell.x + xDiff;
-    const endY = startCell.y + yDiff;
-    
-    if (endX >= GRID_SIZE || endY >= GRID_SIZE || endX < 0 || endY < 0) {
-      return false;
-    }
-
-    const startX = Math.min(startCell.x, endX);
-    const startY = Math.min(startCell.y, endY);
-    const width = Math.abs(xDiff) + 1;
-    const height = Math.abs(yDiff) + 1;
-
-    for (let y = startY; y < startY + height; y++) {
-      for (let x = startX; x < startX + width; x++) {
-        const cell = cells.find(c => c.x === x && c.y === y);
-        if (cell && cell.player !== null) {
-          return false;
-        }
-      }
-    }
-    
-    return true;
-  };
 
   return (
     <div className={styles.gameContainer}>
@@ -305,8 +160,8 @@ export default function GameBoard() {
             {cells.map((cell) => {
               const isPlayer1Start = isStartPosition(cell.x, cell.y, 1);
               const isPlayer2Start = isStartPosition(cell.x, cell.y, 2);
-              const isInSelectedPlace = isInSelectedPlaceArea(cell.x, cell.y);
-              const canPlace = canPlaceAtCurrentPosition();
+              const isInSelectedPlace = isInSelectedPlaceArea(cell.x, cell.y, placeState, diceValues);
+              const canPlace = canPlaceAtCurrentPosition(placeState, diceValues, cells);
               
               return (
                 <div
