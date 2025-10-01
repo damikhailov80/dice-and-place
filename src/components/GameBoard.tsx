@@ -27,8 +27,8 @@ type FigureShape = {
   };
 
 
-interface DragState {
-  isDragging: boolean;
+interface PlaceState {
+  isPlacing: boolean;
   startCell: Cell | null;
   currentCell: Cell | null;
   figureShape: FigureShape | null;
@@ -60,8 +60,8 @@ export default function GameBoard() {
 
   const [diceValues, setDiceValues] = useState<[number, number] | null>(null);
   const [currentPlayerId, setCurrentPlayerId] = useState<number>(1);
-  const [dragState, setDragState] = useState<DragState>({
-    isDragging: false,
+  const [placeState, setPlaceState] = useState<PlaceState>({
+    isPlacing: false,
     startCell: null,
     currentCell: null,
     figureShape: null,
@@ -83,9 +83,9 @@ export default function GameBoard() {
   };
 
   const handleCellEnter = (x: number, y: number) => {
-    if (!dragState.isDragging) return;
+    if (!placeState.isPlacing) return;
 
-    const { startCell } = dragState;
+    const { startCell } = placeState;
     const xDiff = x - startCell!.x;
     const yDiff = y - startCell!.y;
 
@@ -97,7 +97,7 @@ export default function GameBoard() {
     const figureShape:FigureShape = { size, direction };
 
     if (figureShape) {
-      setDragState({ ...dragState, figureShape });
+      setPlaceState({ ...placeState, figureShape });
     }
   };
 
@@ -149,8 +149,8 @@ export default function GameBoard() {
 
     event.preventDefault();
     
-    setDragState({
-      isDragging: true,
+    setPlaceState({
+      isPlacing: true,
       startCell: cell,
       currentCell: cell,
       figureShape: figureShapes[0],
@@ -158,9 +158,9 @@ export default function GameBoard() {
   };
 
   const handleMouseUp = () => {
-    if (!dragState.isDragging || !dragState.startCell || !dragState.figureShape || !diceValues) {
-      setDragState({
-        isDragging: false,
+    if (!placeState.isPlacing || !placeState.startCell || !placeState.figureShape || !diceValues) {
+      setPlaceState({
+        isPlacing: false,
         startCell: null,
         currentCell: null,
         figureShape: null,
@@ -168,7 +168,7 @@ export default function GameBoard() {
       return;
     }
 
-    const { startCell, figureShape } = dragState;
+    const { startCell, figureShape } = placeState;
 
     if (canPlaceAtCurrentPosition()) {
       const max = Math.max(diceValues[0], diceValues[1]) - 1;
@@ -204,8 +204,8 @@ export default function GameBoard() {
       switchPlayer();
     }
 
-    setDragState({
-      isDragging: false,
+    setPlaceState({
+      isPlacing: false,
       startCell: null,
       currentCell: null,
       figureShape: null,
@@ -241,9 +241,9 @@ export default function GameBoard() {
   }
 
   const isInSelectedPlaceArea = (x: number, y: number) => {
-    if (!dragState.isDragging || !dragState.startCell || !dragState.figureShape) return false;
+    if (!placeState.isPlacing || !placeState.startCell || !placeState.figureShape) return false;
     
-    const { startCell, figureShape } = dragState;
+    const { startCell, figureShape } = placeState;
     const max = Math.max(diceValues![0], diceValues![1]) - 1;
     const min = Math.min(diceValues![0], diceValues![1]) - 1;
     const xDiff = (figureShape.size[0] === "max" ? max : min) * figureShape.direction[0];
@@ -257,11 +257,11 @@ export default function GameBoard() {
   };
 
   const canPlaceAtCurrentPosition = () => {
-    if (!dragState.isDragging || !dragState.startCell || !dragState.figureShape || !diceValues) {
+    if (!placeState.isPlacing || !placeState.startCell || !placeState.figureShape || !diceValues) {
       return false;
     }
 
-    const { startCell, figureShape } = dragState;
+    const { startCell, figureShape } = placeState;
     const max = Math.max(diceValues[0], diceValues[1]) - 1;
     const min = Math.min(diceValues[0], diceValues[1]) - 1;
     const xDiff = (figureShape.size[0] === "max" ? max : min) * figureShape.direction[0];
@@ -298,7 +298,7 @@ export default function GameBoard() {
           <h1 className={styles.gameTitle}>Dice and Place</h1>
           
           <div 
-            className={`${styles.gameBoard} ${dragState.isDragging ? styles.dragging : ''}`}
+            className={`${styles.gameBoard} ${placeState.isPlacing ? styles.placing : ''}`}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
