@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './GameBoard.module.css';
 import PlayerPanel from './PlayerPanel';
 import {
@@ -25,6 +25,7 @@ export default function GameBoard() {
   const [cells, setCells] = useState<Cell[]>(() => createInitialCells());
 
   const [diceValues, setDiceValues] = useState<[number, number] | null>(null);
+  const [isRolling, setIsRolling] = useState<boolean>(false);
   const [currentPlayerId, setCurrentPlayerId] = useState<number>(1);
   const [placeState, setPlaceState] = useState<PlaceState>({
     isPlacing: false,
@@ -44,7 +45,6 @@ export default function GameBoard() {
       )
     );
     
-    setDiceValues(null);
     switchPlayer();
   };
 
@@ -70,6 +70,27 @@ export default function GameBoard() {
   const handleDiceRoll = (dice1: number, dice2: number) => {
     setDiceValues([dice1, dice2]);
   };
+
+  const autoRollDice = () => {
+    setIsRolling(true);
+    const dice1 = Math.floor(Math.random() * 6) + 1;
+    const dice2 = Math.floor(Math.random() * 6) + 1;
+    
+    setTimeout(() => {
+      setDiceValues([dice1, dice2]);
+      setIsRolling(false);
+    }, 1500);
+  };
+
+  useEffect(() => {
+    if (!diceValues && !isRolling) {
+      const timer = setTimeout(() => {
+        autoRollDice();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [currentPlayerId, diceValues, isRolling]);
 
 
 
@@ -124,7 +145,6 @@ export default function GameBoard() {
         return newCells;
       });
       
-      setDiceValues(null);
       switchPlayer();
     }
 
@@ -137,6 +157,7 @@ export default function GameBoard() {
   };
 
   const switchPlayer = () => {
+    setDiceValues(null);
     setCurrentPlayerId(prevId => prevId === 1 ? 2 : 1);
     setPlayers(prevPlayers =>
       prevPlayers.map(player => ({
@@ -147,8 +168,6 @@ export default function GameBoard() {
   };
 
   const getCellClassName = (cell: Cell) => {
-    const isPlayer1StartPosition = isStartPosition(cell.x, cell.y, 1, cells);
-    const isPlayer2StartPosition = isStartPosition(cell.x, cell.y, 2, cells);
     const isInSelectedPlace = isInSelectedPlaceArea(cell.x, cell.y, placeState, diceValues);
     const canPlace = canPlaceAtCurrentPosition(placeState, diceValues, cells);
 
@@ -156,17 +175,30 @@ export default function GameBoard() {
     
     if (cell.player) baseClasses.push(styles.filled);
     if (cell.isSelected) baseClasses.push(styles.selected);
-    if (cell.player === 1) baseClasses.push(styles.player1);
-    if (cell.player === 2) baseClasses.push(styles.player2);
-    if (isPlayer1StartPosition) baseClasses.push(styles.possiblePosition1);
-    if (isPlayer2StartPosition) baseClasses.push(styles.possiblePosition2);
-    
     if (isInSelectedPlace) {
-      if (canPlace) {
-        baseClasses.push(currentPlayerId === 1 ? styles.placeAreaValidPlayer1 : styles.placeAreaValidPlayer2);
-      } else {
-        baseClasses.push(styles.placeAreaInvalid);
-      }
+        if (canPlace) {
+          baseClasses.push(currentPlayerId === 1 ? styles.placeAreaValidPlayer1 : styles.placeAreaValidPlayer2);
+        } else {
+          baseClasses.push(styles.placeAreaInvalid);
+        }
+        return baseClasses.join(' ');
+    }
+    if (cell.player === 1) {
+        baseClasses.push(styles.player1);
+        return baseClasses.join(' ');
+    }
+    if (cell.player === 2) {
+        baseClasses.push(styles.player2);
+        return baseClasses.join(' ');
+    }
+    
+    // Показываем стартовые позиции только для текущего игрока
+    if (currentPlayerId === 1) {
+      const isPlayer1StartPosition = isStartPosition(cell.x, cell.y, 1, cells);
+      if (isPlayer1StartPosition) baseClasses.push(styles.possiblePosition1);
+    } else if (currentPlayerId === 2) {
+      const isPlayer2StartPosition = isStartPosition(cell.x, cell.y, 2, cells);
+      if (isPlayer2StartPosition) baseClasses.push(styles.possiblePosition2);
     }
 
     return baseClasses.join(' ');
@@ -199,8 +231,8 @@ export default function GameBoard() {
         
         <PlayerPanel 
           players={players}
-          onDiceRoll={handleDiceRoll}
           diceValues={diceValues}
+          isRolling={isRolling}
         />
       </div>
     </div>

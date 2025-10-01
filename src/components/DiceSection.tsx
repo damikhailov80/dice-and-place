@@ -3,26 +3,16 @@
 import styles from './DiceSection.module.css';
 
 interface DiceSectionProps {
-  onDiceRoll: (dice1: number, dice2: number) => void;
   diceValues: [number, number] | null;
+  isRolling?: boolean;
 }
 
-export default function DiceSection({ onDiceRoll, diceValues }: DiceSectionProps) {
-  const rollDice = () => {
-    const dice1 = Math.floor(Math.random() * 6) + 1;
-    const dice2 = Math.floor(Math.random() * 6) + 1;
-    onDiceRoll(dice1, dice2);
-  };
-
+export default function DiceSection({ diceValues, isRolling = false }: DiceSectionProps) {
   return (
     <div className={styles.diceSection}>
-      <button 
-        className={styles.diceButton} 
-        onClick={rollDice}
-        disabled={!!diceValues}
-      >
-        Roll Dice
-      </button>
+      <div className={styles.diceTitle}>
+        {isRolling ? 'Бросаем кости...' : diceValues ? 'Результат броска:' : 'Ожидание броска...'}
+      </div>
       {diceValues && (
         <div className={styles.diceValues}>
           <div className={styles.diceContainer}>

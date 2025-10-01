@@ -13,11 +13,11 @@ interface Player {
 
 interface PlayerPanelProps {
   players: Player[];
-  onDiceRoll: (dice1: number, dice2: number) => void;
   diceValues: [number, number] | null;
+  isRolling?: boolean;
 }
 
-export default function PlayerPanel({ players, onDiceRoll, diceValues }: PlayerPanelProps) {
+export default function PlayerPanel({ players, diceValues, isRolling = false }: PlayerPanelProps) {
   return (
     <div className={styles.playerPanel}>
       <div className={styles.playersSection}>
@@ -36,8 +36,8 @@ export default function PlayerPanel({ players, onDiceRoll, diceValues }: PlayerP
       </div>
       
       <DiceSection 
-        onDiceRoll={onDiceRoll}
         diceValues={diceValues}
+        isRolling={isRolling}
       />
     </div>
   );
