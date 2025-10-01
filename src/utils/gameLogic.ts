@@ -71,12 +71,31 @@ export const isBetween = (num: number, r1: number, r2: number): boolean => {
   return num >= min && num <= max;
 };
 
-export const isStartPosition = (x: number, y: number, playerId: number): boolean => {
+export const isStartPosition = (x: number, y: number, playerId: number, cells: Cell[]): boolean => {
   if (playerId === 1) {
-    return x === 0 && y === 0;
+    if (x === 0 && y === 0) return true;
   } else if (playerId === 2) {
-    return x === GRID_SIZE - 1 && y === GRID_SIZE - 1;
+    if (x === GRID_SIZE - 1 && y === GRID_SIZE - 1) return true;
   }
+
+  const directions = [
+    [-1, -1], [-1, 0], [-1, 1],
+    [0, -1],           [0, 1],
+    [1, -1],  [1, 0],  [1, 1]
+  ];
+
+  for (const [dx, dy] of directions) {
+    const neighborX = x + dx;
+    const neighborY = y + dy;
+    
+    if (neighborX >= 0 && neighborX < GRID_SIZE && neighborY >= 0 && neighborY < GRID_SIZE) {
+      const neighborCell = cells.find(cell => cell.x === neighborX && cell.y === neighborY);
+      if (neighborCell && neighborCell.player === playerId) {
+        return true;
+      }
+    }
+  }
+
   return false;
 };
 

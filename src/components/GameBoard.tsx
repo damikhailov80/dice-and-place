@@ -156,8 +156,8 @@ export default function GameBoard() {
             onMouseLeave={handleMouseUp}
           >
             {cells.map((cell) => {
-              const isPlayer1Start = isStartPosition(cell.x, cell.y, 1);
-              const isPlayer2Start = isStartPosition(cell.x, cell.y, 2);
+              const isPlayer1StartPosition = isStartPosition(cell.x, cell.y, 1, cells);
+              const isPlayer2StartPosition = isStartPosition(cell.x, cell.y, 2, cells);
               const isInSelectedPlace = isInSelectedPlaceArea(cell.x, cell.y, placeState, diceValues);
               const canPlace = canPlaceAtCurrentPosition(placeState, diceValues, cells);
               
@@ -169,8 +169,8 @@ export default function GameBoard() {
                   } ${cell.isSelected ? styles.selected : ''} ${
                     cell.player === 1 ? styles.player1 : cell.player === 2 ? styles.player2 : ''
                   } 
-                  ${isPlayer1Start ? styles.possiblePosition1 : ''}
-                  ${isPlayer2Start ? styles.possiblePosition2 : ''}
+                  ${isPlayer1StartPosition ? styles.possiblePosition1 : ''}
+                  ${isPlayer2StartPosition ? styles.possiblePosition2 : ''}
                    ${
                     isInSelectedPlace ? (canPlace ? 
                       (currentPlayerId === 1 ? styles.placeAreaValidPlayer1 : styles.placeAreaValidPlayer2) : 
