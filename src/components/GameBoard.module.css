@@ -128,17 +128,22 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* Drag & Drop стили */
-.dragAreaValid {
-  background: rgba(46, 204, 113, 0.3) !important;
-  border: 2px solid #27ae60 !important;
-  box-shadow: 0 0 10px rgba(46, 204, 113, 0.5) !important;
+.placeAreaValidPlayer1 {
+  background: rgba(116, 185, 255, 0.3) !important;
+  border: 2px solid #0984e3 !important;
+  box-shadow: 0 0 10px rgba(116, 185, 255, 0.5) !important;
 }
 
-.dragAreaInvalid {
-  background: rgba(231, 76, 60, 0.3) !important;
+.placeAreaValidPlayer2 {
+  background: rgba(255, 107, 107, 0.3) !important;
   border: 2px solid #e74c3c !important;
-  box-shadow: 0 0 10px rgba(231, 76, 60, 0.5) !important;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5) !important;
+}
+
+.placeAreaInvalid {
+  background: rgba(149, 165, 166, 0.3) !important;
+  border: 2px solid #7f8c8d !important;
+  box-shadow: 0 0 10px rgba(149, 165, 166, 0.5) !important;
 }
 
 .cell.dragging {

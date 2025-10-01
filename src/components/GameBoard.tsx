@@ -319,7 +319,9 @@ export default function GameBoard() {
                   ${isPlayer1Start ? styles.possiblePosition1 : ''}
                   ${isPlayer2Start ? styles.possiblePosition2 : ''}
                    ${
-                    isInSelectedPlace ? (canPlace ? styles.dragAreaValid : styles.dragAreaInvalid) : ''
+                    isInSelectedPlace ? (canPlace ? 
+                      (currentPlayerId === 1 ? styles.placeAreaValidPlayer1 : styles.placeAreaValidPlayer2) : 
+                      styles.placeAreaInvalid) : ''
                   }`}
                   onClick={() => handleCellClick(cell.id)}
                   onMouseEnter={() => handleCellEnter(cell.x, cell.y)}
