@@ -143,8 +143,6 @@ export default function GameBoard() {
     );
   };
 
-  const currentPlayer = players.find(player => player.id === currentPlayerId);
-
 
   return (
     <div className={styles.gameContainer}>
