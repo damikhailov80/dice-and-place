@@ -88,8 +88,8 @@
 
 .cell.possiblePosition1 {
   position: relative;
-  border: 1px solid rgba(9, 132, 227, 0.4);
-  box-shadow: 0 0 5px rgba(9, 132, 227, 0.2);
+  border: 1px solid rgba(9, 132, 227, 0.4) !important;
+  box-shadow: 0 0 5px rgba(9, 132, 227, 0.2) !important;
 }
 
 .cell.possiblePosition1::before {
@@ -106,8 +106,8 @@
 
 .cell.possiblePosition2 {
   position: relative;
-  border: 1px solid rgba(231, 76, 60, 0.4);
-  box-shadow: 0 0 5px rgba(231, 76, 60, 0.2);
+  border: 1px solid rgba(231, 76, 60, 0.4) !important;
+  box-shadow: 0 0 5px rgba(231, 76, 60, 0.2) !important;
 }
 
 .cell.possiblePosition2::before {

@@ -79,6 +79,9 @@ export default function GameBoard() {
     const cell = cells.find(c => c.id === cellId);
     if (!cell) return;
 
+    const isCurrentPlayerStartPosition = isStartPosition(cell.x, cell.y, currentPlayerId, cells);
+    if (!isCurrentPlayerStartPosition) return;
+
     event.preventDefault();
     
     setPlaceState({
@@ -143,6 +146,32 @@ export default function GameBoard() {
     );
   };
 
+  const getCellClassName = (cell: Cell) => {
+    const isPlayer1StartPosition = isStartPosition(cell.x, cell.y, 1, cells);
+    const isPlayer2StartPosition = isStartPosition(cell.x, cell.y, 2, cells);
+    const isInSelectedPlace = isInSelectedPlaceArea(cell.x, cell.y, placeState, diceValues);
+    const canPlace = canPlaceAtCurrentPosition(placeState, diceValues, cells);
+
+    const baseClasses = [styles.cell];
+    
+    if (cell.player) baseClasses.push(styles.filled);
+    if (cell.isSelected) baseClasses.push(styles.selected);
+    if (cell.player === 1) baseClasses.push(styles.player1);
+    if (cell.player === 2) baseClasses.push(styles.player2);
+    if (isPlayer1StartPosition) baseClasses.push(styles.possiblePosition1);
+    if (isPlayer2StartPosition) baseClasses.push(styles.possiblePosition2);
+    
+    if (isInSelectedPlace) {
+      if (canPlace) {
+        baseClasses.push(currentPlayerId === 1 ? styles.placeAreaValidPlayer1 : styles.placeAreaValidPlayer2);
+      } else {
+        baseClasses.push(styles.placeAreaInvalid);
+      }
+    }
+
+    return baseClasses.join(' ');
+  };
+
 
   return (
     <div className={styles.gameContainer}>
@@ -155,34 +184,16 @@ export default function GameBoard() {
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
-            {cells.map((cell) => {
-              const isPlayer1StartPosition = isStartPosition(cell.x, cell.y, 1, cells);
-              const isPlayer2StartPosition = isStartPosition(cell.x, cell.y, 2, cells);
-              const isInSelectedPlace = isInSelectedPlaceArea(cell.x, cell.y, placeState, diceValues);
-              const canPlace = canPlaceAtCurrentPosition(placeState, diceValues, cells);
-              
-              return (
-                <div
-                  key={cell.id}
-                  className={`${styles.cell} ${
-                    cell.player ? styles.filled : ''
-                  } ${cell.isSelected ? styles.selected : ''} ${
-                    cell.player === 1 ? styles.player1 : cell.player === 2 ? styles.player2 : ''
-                  } 
-                  ${isPlayer1StartPosition ? styles.possiblePosition1 : ''}
-                  ${isPlayer2StartPosition ? styles.possiblePosition2 : ''}
-                   ${
-                    isInSelectedPlace ? (canPlace ? 
-                      (currentPlayerId === 1 ? styles.placeAreaValidPlayer1 : styles.placeAreaValidPlayer2) : 
-                      styles.placeAreaInvalid) : ''
-                  }`}
-                  onClick={() => handleCellClick(cell.id)}
-                  onMouseEnter={() => handleCellEnter(cell.x, cell.y)}
-                  onMouseDown={(e) => handleMouseDown(cell.id, e)}
-                >
-                </div>
-              );
-            })}
+            {cells.map((cell) => (
+              <div
+                key={cell.id}
+                className={getCellClassName(cell)}
+                onClick={() => handleCellClick(cell.id)}
+                onMouseEnter={() => handleCellEnter(cell.x, cell.y)}
+                onMouseDown={(e) => handleMouseDown(cell.id, e)}
+              >
+              </div>
+            ))}
           </div>
         </div>
         
