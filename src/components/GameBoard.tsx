@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import styles from './GameBoard.module.css';
 import PlayerPanel from './PlayerPanel';
 
 interface Cell {
   id: string;
-  row: number;
-  col: number;
+  x: number;
+  y: number;
   value: number | null;
   player: number | null;
   isSelected: boolean;
@@ -20,6 +20,21 @@ interface Player {
   color: string;
 }
 
+type Size = ["max", "min"] | ["min", "max"] | ["max", "max"] | ["min", "min"];
+type Direction = [-1, 1] | [1, -1] | [1, 1] | [-1, -1];
+type FigureShape = {
+    size: Size;
+    direction: Direction;
+  };
+
+
+interface DragState {
+  isDragging: boolean;
+  startCell: Cell | null;
+  currentCell: Cell | null;
+  figureShape: FigureShape | null;
+}
+
 const GRID_SIZE = 15;
 
 export default function GameBoard() {
@@ -30,12 +45,12 @@ export default function GameBoard() {
 
   const [cells, setCells] = useState<Cell[]>(() => {
     const initialCells: Cell[] = [];
-    for (let row = 0; row < GRID_SIZE; row++) {
-      for (let col = 0; col < GRID_SIZE; col++) {
+    for (let y = 0; y < GRID_SIZE; y++) {
+      for (let x = 0; x < GRID_SIZE; x++) {
         initialCells.push({
-          id: `${row}-${col}`,
-          row,
-          col,
+          id: `${x}-${y}`,
+          x,
+          y,
           value: null,
           player: null,
           isSelected: false,
@@ -47,6 +62,12 @@ export default function GameBoard() {
 
   const [diceValues, setDiceValues] = useState<[number, number] | null>(null);
   const [currentPlayerId, setCurrentPlayerId] = useState<number>(1);
+  const [dragState, setDragState] = useState<DragState>({
+    isDragging: false,
+    startCell: null,
+    currentCell: null,
+    figureShape: null,
+  });
 
   const handleCellClick = (cellId: string) => {
     if (!diceValues) return;
@@ -63,20 +84,148 @@ export default function GameBoard() {
     switchPlayer();
   };
 
-  const handleCellHover = (cellId: string) => {
-    if (!diceValues) return;
+  const handleCellEnter = (x: number, y: number) => {
+    if (!dragState.isDragging) return;
 
-    setCells(prevCells =>
-      prevCells.map(cell =>
-        cell.id === cellId
-          ? { ...cell, isSelected: true }
-          : { ...cell, isSelected: false }
-      )
-    );
+    const { startCell } = dragState;
+    const xDiff = x - startCell!.x;
+    const yDiff = y - startCell!.y;
+
+    const size: Size = Math.abs(yDiff) > Math.abs(xDiff) ? ["min", "max"] : ["max", "min"];
+    const direction: Direction = [
+      xDiff === 0 ? 1 : (xDiff > 0 ? 1 : -1), 
+      yDiff === 0 ? 1 : (yDiff > 0 ? 1 : -1)
+    ] as Direction;
+    const figureShape:FigureShape = { size, direction };
+
+    if (figureShape) {
+      setDragState({ ...dragState, figureShape });
+    }
   };
 
   const handleDiceRoll = (dice1: number, dice2: number) => {
     setDiceValues([dice1, dice2]);
+  };
+
+  // Функция для определения размера фигуры по значениям костей
+  const getFigureSize = (dice1: number, dice2: number) => {
+    return {
+      width: dice1,
+      height: dice2,
+    };
+  };
+
+  // Функция для проверки, можно ли разместить фигуру в указанной позиции
+  const canPlaceFigure = (startX: number, startY: number, width: number, height: number) => {
+    // Проверяем, что фигура помещается в границы поля
+    if (startY + height > GRID_SIZE || startX + width > GRID_SIZE) {
+      return false;
+    }
+
+    // Проверяем, что все клетки в области фигуры свободны
+    for (let y = startY; y < startY + height; y++) {
+      for (let x = startX; x < startX + width; x++) {
+        const cell = cells.find(c => c.x === x && c.y === y);
+        if (cell && cell.player !== null) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  const figureShapes: FigureShape[] = [
+    {
+        size: ["min", "max"],
+        direction: [1, -1]
+    },
+    {
+        size: ["max", "min"],
+        direction: [1, -1]
+    },
+    {
+        size: ["max", "min"],
+        direction: [1, 1]
+    },
+    {
+        size: ["min", "max"],
+        direction: [1, 1]
+    },
+    {   
+        size: ["min", "max"],
+        direction: [1, -1]
+    },
+    {
+        size: ["max", "min"],
+        direction: [1, -1]
+    },
+    {
+        size: ["max", "min"],
+        direction: [-1, -1]
+    },
+    {
+        size: ["min", "max"],
+        direction: [-1, -1]
+    }
+  ]
+
+  // Обработчик начала перетаскивания
+  const handleMouseDown = (cellId: string, event: React.MouseEvent) => {
+    if (!diceValues) return;
+    
+    const cell = cells.find(c => c.id === cellId);
+    if (!cell) return;
+
+    event.preventDefault();
+    
+    setDragState({
+      isDragging: true,
+      startCell: cell,
+      currentCell: cell,
+      figureShape: figureShapes[0],
+    });
+  };
+
+  // Обработчик отпускания мыши
+  const handleMouseUp = () => {
+    if (!dragState.isDragging || !dragState.startCell || !dragState.figureShape) {
+      setDragState({
+        isDragging: false,
+        startCell: null,
+        currentCell: null,
+        figureShape: figureShapes[0],
+      });
+      return;
+    }
+
+    const { startCell, figureShape } = dragState;
+
+    // if (canPlaceFigure(startCell.row, startCell.col, width, height)) {
+    //   // Размещаем фигуру от стартовой позиции
+    //   const newCells = [...cells];
+    //   for (let row = startCell.row; row < startCell.row + height; row++) {
+    //     for (let col = startCell.col; col < startCell.col + width; col++) {
+    //       const cellIndex = newCells.findIndex(c => c.row === row && c.col === col);
+    //       if (cellIndex !== -1) {
+    //         newCells[cellIndex] = {
+    //           ...newCells[cellIndex],
+    //           player: currentPlayerId,
+    //           value: diceValues![0] + diceValues![1],
+    //         };
+    //       }
+    //     }
+    //   }
+    //   setCells(newCells);
+    //   setDiceValues(null);
+    //   switchPlayer();
+    // }
+
+    setDragState({
+      isDragging: false,
+      startCell: null,
+      currentCell: null,
+      figureShape: null,
+    });
   };
 
   const switchPlayer = () => {
@@ -91,29 +240,84 @@ export default function GameBoard() {
 
   const currentPlayer = players.find(player => player.id === currentPlayerId);
 
+//   // Функция для определения стартовой позиции игрока
+  const isStartPosition = (x: number, y: number, playerId: number) => {
+    if (playerId === 1) {
+      return x === 0 && y === 0; // Верхняя левая клетка для игрока 1
+    } else if (playerId === 2) {
+      return x === GRID_SIZE - 1 && y === GRID_SIZE - 1; // Нижняя правая клетка для игрока 2
+    }
+    return false;
+  };
+
+
+  const isBetween = (num: number, r1: number, r2: number) => {
+    const min = Math.min(r1, r2);
+    const max = Math.max(r1, r2);
+    return num >= min && num <= max;
+  }
+
+  const isInDragArea = (x: number, y: number) => {
+    if (!dragState.isDragging || !dragState.startCell || !dragState.figureShape) return false;
+    
+    const { startCell, figureShape } = dragState;
+    const max = Math.max(diceValues![0], diceValues![1]) - 1;
+    const min = Math.min(diceValues![0], diceValues![1]) - 1;
+    const xDiff = (figureShape.size[0] === "max" ? max : min) * figureShape.direction[0];
+    const yDiff = (figureShape.size[1] === "max" ? max : min) * figureShape.direction[1];
+    
+
+    const result = isBetween(x, startCell.x, startCell.x + xDiff) && 
+           isBetween(y, startCell.y, startCell.y + yDiff);
+
+    return result;
+  };
+
+  // Функция для проверки, можно ли разместить фигуру в текущей позиции
+  const canPlaceAtCurrentPosition = () => {
+   return true;
+  };
+
   return (
     <div className={styles.gameContainer}>
       <div className={styles.gameContent}>
         <div className={styles.leftSection}>
           <h1 className={styles.gameTitle}>Dice and Place</h1>
           
-          <div className={styles.gameBoard}>
-            {cells.map((cell) => (
-              <div
-                key={cell.id}
-                className={`${styles.cell} ${
-                  cell.value ? styles.filled : ''
-                } ${cell.isSelected ? styles.selected : ''} ${
-                  cell.player === 1 ? styles.player1 : cell.player === 2 ? styles.player2 : ''
-                }`}
-                onClick={() => handleCellClick(cell.id)}
-                onMouseEnter={() => handleCellHover(cell.id)}
-              >
-                {cell.value && (
-                  <span className={styles.cellValue}>{cell.value}</span>
-                )}
-              </div>
-            ))}
+          <div 
+            className={`${styles.gameBoard} ${dragState.isDragging ? styles.dragging : ''}`}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            {cells.map((cell) => {
+              const isPlayer1Start = isStartPosition(cell.x, cell.y, 1);
+              const isPlayer2Start = isStartPosition(cell.x, cell.y, 2);
+              const isInDrag = isInDragArea(cell.x, cell.y);
+              const canPlace = canPlaceAtCurrentPosition();
+              
+              return (
+                <div
+                  key={cell.id}
+                  className={`${styles.cell} ${
+                    cell.value ? styles.filled : ''
+                  } ${cell.isSelected ? styles.selected : ''} ${
+                    cell.player === 1 ? styles.player1 : cell.player === 2 ? styles.player2 : ''
+                  } 
+                  ${isPlayer1Start ? styles.possiblePosition1 : ''}
+                  ${isPlayer2Start ? styles.possiblePosition2 : ''}
+                   ${
+                    isInDrag ? (canPlace ? styles.dragAreaValid : styles.dragAreaInvalid) : ''
+                  }`}
+                  onClick={() => handleCellClick(cell.id)}
+                  onMouseEnter={() => handleCellEnter(cell.x, cell.y)}
+                  onMouseDown={(e) => handleMouseDown(cell.id, e)}
+                >
+                  {cell.value && (
+                    <span className={styles.cellValue}>{cell.value}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
         

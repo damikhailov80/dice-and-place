@@ -86,10 +86,69 @@
   box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
 }
 
+.cell.possiblePosition1 {
+  position: relative;
+  border: 1px solid rgba(9, 132, 227, 0.4);
+  box-shadow: 0 0 5px rgba(9, 132, 227, 0.2);
+}
+
+.cell.possiblePosition1::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(116, 185, 255, 0.3);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.cell.possiblePosition2 {
+  position: relative;
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  box-shadow: 0 0 5px rgba(231, 76, 60, 0.2);
+}
+
+.cell.possiblePosition2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 107, 107, 0.3);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
 .cellValue {
   font-size: 1.2rem;
   font-weight: bold;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Drag & Drop стили */
+.dragAreaValid {
+  background: rgba(46, 204, 113, 0.3) !important;
+  border: 2px solid #27ae60 !important;
+  box-shadow: 0 0 10px rgba(46, 204, 113, 0.5) !important;
+}
+
+.dragAreaInvalid {
+  background: rgba(231, 76, 60, 0.3) !important;
+  border: 2px solid #e74c3c !important;
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.5) !important;
+}
+
+.cell.dragging {
+  cursor: grabbing;
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.gameBoard.dragging {
+  cursor: grabbing;
 }
 
 

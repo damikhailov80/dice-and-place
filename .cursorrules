@@ -1,8 +1,8 @@
 # Calc Calories Project Instructions
 
 ## Language
-ВСЕГДА отвечать на русском языке. Все объяснения, комментарии и общение должны быть на русском языке.
-Для сообщений в git комитах используй English.
+ВСЕГДА отвечать на русском языке.
+Для сообщений в git комитах используй English. Никогда не добавляй комментарии в код.
 
 ## Project Overview
 This is a Next.js application implementing the game "Dice and Place".
