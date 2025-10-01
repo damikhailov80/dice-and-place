@@ -1,0 +1,120 @@
+.diceSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 15px;
+  border: 2px solid #dee2e6;
+}
+
+.diceButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  font-weight: 500;
+  width: 100%;
+  max-width: 200px;
+}
+
+.diceButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.diceButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.diceValues {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.diceContainer {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.dice {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 3px solid #dee2e6;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.dice::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  z-index: -1;
+}
+
+.diceValue {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2c3e50;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .diceSection {
+    padding: 15px;
+  }
+  
+  .diceButton {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+  
+  .dice {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .diceValue {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .diceSection {
+    padding: 12px;
+  }
+  
+  .diceButton {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .dice {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .diceValue {
+    font-size: 1.3rem;
+  }
+}

@@ -1,0 +1,144 @@
+.gameContainer {
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.gameContent {
+  display: flex;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: flex-start;
+}
+
+.leftSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.gameTitle {
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-weight: 300;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+.gameBoard {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  grid-template-rows: repeat(15, 1fr);
+  gap: 2px;
+  background: #34495e;
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.cell {
+  background: #ecf0f1;
+  border: 1px solid #bdc3c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 3px;
+  min-height: 30px;
+}
+
+.cell:hover {
+  background: #d5dbdb;
+  transform: scale(1.05);
+}
+
+.cell.filled {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  color: white;
+  font-weight: bold;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.cell.player1 {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  color: white;
+  border: 2px solid #0984e3;
+}
+
+.cell.player2 {
+  background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%);
+  color: white;
+  border: 2px solid #e74c3c;
+}
+
+.cell.selected {
+  background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%);
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+}
+
+.cellValue {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+
+@media (max-width: 768px) {
+  .gameContainer {
+    padding: 10px;
+  }
+  
+  .gameContent {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .leftSection {
+    order: 2;
+  }
+  
+  .gameTitle {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  
+  .gameBoard {
+    max-width: 90vw;
+    gap: 1px;
+    padding: 5px;
+  }
+  
+  .cell {
+    min-height: 20px;
+  }
+  
+  .cellValue {
+    font-size: 0.9rem;
+  }
+  
+}
+
+@media (max-width: 480px) {
+  .gameBoard {
+    max-width: 95vw;
+  }
+  
+  .cell {
+    min-height: 15px;
+  }
+  
+  .cellValue {
+    font-size: 0.8rem;
+  }
+}

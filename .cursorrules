@@ -1,0 +1,48 @@
+# Calc Calories Project Instructions
+
+## Language
+ВСЕГДА отвечать на русском языке. Все объяснения, комментарии и общение должны быть на русском языке.
+Для сообщений в git комитах используй English.
+
+## Project Overview
+This is a Next.js application implementing the game "Dice and Place".
+
+## Tech Stack
+- Next.js (App Router)
+- TypeScript
+
+## Development Guidelines
+- Use "mobile first" approach 
+- Use TypeScript for all new files
+- Follow Next.js App Router conventions
+- Place components in `src/components/`
+- Use absolute imports when possible
+- Implement proper error handling
+- Ensure responsive design
+- Ensure that all ID are in the format of UUIDs for unique identification
+- All modals should take full screen on mobile (resolution below 420px)
+
+## Project Structure
+- `src/app/` - Next.js app router pages and layouts
+- `src/components/` - Reusable React components
+- `src/app/api/` - API routes
+- `public/` - Static assets
+
+## Authentication
+- Using NextAuth.js for authentication
+- Auth provider is configured in `src/app/auth-provider.tsx`
+- Sign in/out components are in `src/components/`
+
+## Code Style
+- Use functional components with hooks
+- Prefer arrow functions for components
+- Use proper TypeScript types
+- Follow ESLint and Prettier configurations
+- Write descriptive commit messages
+
+## When making changes:
+1. Always check existing code patterns first
+2. Maintain consistency with current architecture
+3. Add proper TypeScript types
+4. Test authentication flows if modifying auth
+5. Ensure mobile responsiveness
