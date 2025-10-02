@@ -28,7 +28,9 @@ export interface PlaceState {
   figureShape: FigureShape | null;
 }
 
-export const GRID_SIZE = 15;
+export type GridSize = 10 | 15 | 20;
+
+export const GRID_SIZE = 15; // Дефолтный размер для обратной совместимости
 
 export const figureShapes: FigureShape[] = [
   {
@@ -71,11 +73,11 @@ export const isBetween = (num: number, r1: number, r2: number): boolean => {
   return num >= min && num <= max;
 };
 
-export const isStartPosition = (x: number, y: number, playerId: number, cells: Cell[]): boolean => {
+export const isStartPosition = (x: number, y: number, playerId: number, cells: Cell[], gridSize: number = GRID_SIZE): boolean => {
   if (playerId === 1) {
     if (x === 0 && y === 0) return true;
   } else if (playerId === 2) {
-    if (x === GRID_SIZE - 1 && y === GRID_SIZE - 1) return true;
+    if (x === gridSize - 1 && y === gridSize - 1) return true;
   }
 
   const directions = [
@@ -88,7 +90,7 @@ export const isStartPosition = (x: number, y: number, playerId: number, cells: C
     const neighborX = x + dx;
     const neighborY = y + dy;
     
-    if (neighborX >= 0 && neighborX < GRID_SIZE && neighborY >= 0 && neighborY < GRID_SIZE) {
+    if (neighborX >= 0 && neighborX < gridSize && neighborY >= 0 && neighborY < gridSize) {
       const neighborCell = cells.find(cell => cell.x === neighborX && cell.y === neighborY);
       if (neighborCell && neighborCell.player === playerId) {
         return true;
@@ -131,7 +133,8 @@ export const isInSelectedPlaceArea = (
 export const canPlaceAtCurrentPosition = (
   placeState: PlaceState,
   diceValues: [number, number] | null,
-  cells: Cell[]
+  cells: Cell[],
+  gridSize: number = GRID_SIZE
 ): boolean => {
   if (!placeState.isPlacing || !placeState.startCell || !placeState.figureShape || !diceValues) {
     return false;
@@ -143,7 +146,7 @@ export const canPlaceAtCurrentPosition = (
   const endX = startCell.x + xDiff;
   const endY = startCell.y + yDiff;
   
-  if (!isBetween(endX, 0, GRID_SIZE - 1) || !isBetween(endY, 0, GRID_SIZE - 1)) {
+  if (!isBetween(endX, 0, gridSize - 1) || !isBetween(endY, 0, gridSize - 1)) {
     return false;
   }
 
@@ -154,7 +157,7 @@ export const canPlaceAtCurrentPosition = (
 
   for (let y = startY; y < startY + height; y++) {
     for (let x = startX; x < startX + width; x++) {
-      const cellIndex = y * GRID_SIZE + x;
+      const cellIndex = y * gridSize + x;
       if (cells[cellIndex]?.player !== null) {
         return false;
       }
@@ -183,10 +186,10 @@ export const calculatePlacementArea = (
 };
 
 
-export const createInitialCells = (): Cell[] => {
+export const createInitialCells = (gridSize: number = GRID_SIZE): Cell[] => {
   const initialCells: Cell[] = [];
-  for (let y = 0; y < GRID_SIZE; y++) {
-    for (let x = 0; x < GRID_SIZE; x++) {
+  for (let y = 0; y < gridSize; y++) {
+    for (let x = 0; x < gridSize; x++) {
       initialCells.push({
         id: `${x}-${y}`,
         x,
@@ -202,9 +205,10 @@ export const createInitialCells = (): Cell[] => {
 export const canPlayerPlaceAnyFigure = (
   playerId: number,
   diceValues: [number, number],
-  cells: Cell[]
+  cells: Cell[],
+  gridSize: number = GRID_SIZE
 ): boolean => {
-  const startPositions = cells.filter(cell => isStartPosition(cell.x, cell.y, playerId, cells));
+  const startPositions = cells.filter(cell => isStartPosition(cell.x, cell.y, playerId, cells, gridSize));
   
   for (const startCell of startPositions) {
     for (const figureShape of figureShapes) {
@@ -215,7 +219,7 @@ export const canPlayerPlaceAnyFigure = (
         figureShape
       };
       
-      if (canPlaceAtCurrentPosition(placeState, diceValues, cells)) {
+      if (canPlaceAtCurrentPosition(placeState, diceValues, cells, gridSize)) {
         return true;
       }
     }
@@ -224,11 +228,8 @@ export const canPlayerPlaceAnyFigure = (
   return false;
 };
 
-export const getGameWinner = (cells: Cell[]): number | null => {
-  const player1Cells = cells.filter(cell => cell.player === 1).length;
-  const player2Cells = cells.filter(cell => cell.player === 2).length;
-  
-  if (player1Cells > player2Cells) return 1;
-  if (player2Cells > player1Cells) return 2;
-  return null;
+export const getGameWinner = (cells: Cell[], currentPlayerId: number): number | null => {
+  // Игрок, который не может разместить фигуру, проигрывает
+  // Противоположный игрок побеждает
+  return currentPlayerId === 1 ? 2 : 1;
 };

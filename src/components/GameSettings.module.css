@@ -1,0 +1,181 @@
+.settingsContainer {
+  position: relative;
+  z-index: 1000;
+}
+
+.settingsButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 20px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.settingsButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.settingsButton:active {
+  transform: translateY(0);
+}
+
+.settingsPanel {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  min-width: 280px;
+  max-width: 320px;
+  z-index: 1001;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settingsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 0 20px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.settingsHeader h3 {
+  margin: 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #666;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.settingsContent {
+  padding: 0 20px 20px 20px;
+}
+
+.settingGroup {
+  margin-bottom: 25px;
+}
+
+.settingLabel {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.radioOption:hover {
+  background: #f8f9fa;
+}
+
+.radioOption input[type="radio"] {
+  margin-right: 10px;
+  width: 16px;
+  height: 16px;
+  accent-color: #667eea;
+}
+
+.radioOption span {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.resetButton {
+  width: 100%;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
+}
+
+.resetButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.resetButton:active {
+  transform: translateY(0);
+}
+
+/* Мобильные стили */
+@media (max-width: 420px) {
+  .settingsPanel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 300px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  .settingsButton {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+}
