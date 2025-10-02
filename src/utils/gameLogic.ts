@@ -198,3 +198,37 @@ export const createInitialCells = (): Cell[] => {
   }
   return initialCells;
 };
+
+export const canPlayerPlaceAnyFigure = (
+  playerId: number,
+  diceValues: [number, number],
+  cells: Cell[]
+): boolean => {
+  const startPositions = cells.filter(cell => isStartPosition(cell.x, cell.y, playerId, cells));
+  
+  for (const startCell of startPositions) {
+    for (const figureShape of figureShapes) {
+      const placeState: PlaceState = {
+        isPlacing: true,
+        startCell,
+        currentCell: startCell,
+        figureShape
+      };
+      
+      if (canPlaceAtCurrentPosition(placeState, diceValues, cells)) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+};
+
+export const getGameWinner = (cells: Cell[]): number | null => {
+  const player1Cells = cells.filter(cell => cell.player === 1).length;
+  const player2Cells = cells.filter(cell => cell.player === 2).length;
+  
+  if (player1Cells > player2Cells) return 1;
+  if (player2Cells > player1Cells) return 2;
+  return null;
+};

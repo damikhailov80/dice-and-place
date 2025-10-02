@@ -206,3 +206,112 @@
     font-size: 0.8rem;
   }
 }
+
+.gameOverScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 20px;
+}
+
+.gameOverTitle {
+  font-size: 3rem;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-weight: 300;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.winnerMessage {
+  margin-bottom: 40px;
+}
+
+.winnerMessage h2 {
+  font-size: 2rem;
+  color: #34495e;
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+
+.winnerColor {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 3px solid white;
+}
+
+.resetButton {
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(116, 185, 255, 0.3);
+  font-weight: 500;
+}
+
+.resetButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(116, 185, 255, 0.4);
+}
+
+.resetButton:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .gameOverTitle {
+    font-size: 2.5rem;
+  }
+  
+  .winnerMessage h2 {
+    font-size: 1.5rem;
+  }
+  
+  .winnerColor {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .resetButton {
+    padding: 12px 25px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .gameOverScreen {
+    padding: 10px;
+  }
+  
+  .gameOverTitle {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .winnerMessage {
+    margin-bottom: 30px;
+  }
+  
+  .winnerMessage h2 {
+    font-size: 1.3rem;
+  }
+  
+  .winnerColor {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .resetButton {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+}

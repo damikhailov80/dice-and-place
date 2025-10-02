@@ -13,7 +13,9 @@ import {
   isInSelectedPlaceArea,
   canPlaceAtCurrentPosition,
   calculatePlacementArea,
-  createInitialCells
+  createInitialCells,
+  canPlayerPlaceAnyFigure,
+  getGameWinner
 } from '../utils/gameLogic';
 
 export default function GameBoard() {
@@ -33,9 +35,16 @@ export default function GameBoard() {
     currentCell: null,
     figureShape: null,
   });
+  const [gameState, setGameState] = useState<{
+    isGameOver: boolean;
+    winner: number | null;
+  }>({
+    isGameOver: false,
+    winner: null,
+  });
 
   const handleCellClick = (cellId: string) => {
-    if (!diceValues) return;
+    if (!diceValues || gameState.isGameOver) return;
 
     setCells(prevCells =>
       prevCells.map(cell =>
@@ -45,7 +54,9 @@ export default function GameBoard() {
       )
     );
     
-    switchPlayer();
+    if (!checkGameEnd(currentPlayerId, diceValues)) {
+      switchPlayer();
+    }
   };
 
   const handleCellEnter = (x: number, y: number) => {
@@ -83,19 +94,31 @@ export default function GameBoard() {
   };
 
   useEffect(() => {
-    if (!diceValues && !isRolling) {
+    if (!diceValues && !isRolling && !gameState.isGameOver) {
       const timer = setTimeout(() => {
         autoRollDice();
       }, 500);
       
       return () => clearTimeout(timer);
     }
-  }, [currentPlayerId, diceValues, isRolling]);
+  }, [currentPlayerId, diceValues, isRolling, gameState.isGameOver]);
+
+  useEffect(() => {
+    if (diceValues && !gameState.isGameOver) {
+      if (!canPlayerPlaceAnyFigure(currentPlayerId, diceValues, cells)) {
+        const winner = getGameWinner(cells);
+        setGameState({
+          isGameOver: true,
+          winner
+        });
+      }
+    }
+  }, [diceValues, currentPlayerId, cells, gameState.isGameOver]);
 
 
 
   const handleMouseDown = (cellId: string, event: React.MouseEvent) => {
-    if (!diceValues) return;
+    if (!diceValues || gameState.isGameOver) return;
     
     const cell = cells.find(c => c.id === cellId);
     if (!cell) return;
@@ -114,7 +137,7 @@ export default function GameBoard() {
   };
 
   const handleMouseUp = () => {
-    if (!placeState.isPlacing || !placeState.startCell || !placeState.figureShape || !diceValues) {
+    if (!placeState.isPlacing || !placeState.startCell || !placeState.figureShape || !diceValues || gameState.isGameOver) {
       setPlaceState({
         isPlacing: false,
         startCell: null,
@@ -145,7 +168,9 @@ export default function GameBoard() {
         return newCells;
       });
       
-      switchPlayer();
+      if (!checkGameEnd(currentPlayerId, diceValues)) {
+        switchPlayer();
+      }
     }
 
     setPlaceState({
@@ -156,13 +181,28 @@ export default function GameBoard() {
     });
   };
 
+  const checkGameEnd = (playerId: number, diceValues: [number, number]) => {
+    if (!canPlayerPlaceAnyFigure(playerId, diceValues, cells)) {
+      const winner = getGameWinner(cells);
+      setGameState({
+        isGameOver: true,
+        winner
+      });
+      return true;
+    }
+    return false;
+  };
+
   const switchPlayer = () => {
+    if (gameState.isGameOver) return;
+    
     setDiceValues(null);
-    setCurrentPlayerId(prevId => prevId === 1 ? 2 : 1);
+    const nextPlayerId = currentPlayerId === 1 ? 2 : 1;
+    setCurrentPlayerId(nextPlayerId);
     setPlayers(prevPlayers =>
       prevPlayers.map(player => ({
         ...player,
-        isActive: player.id === (currentPlayerId === 1 ? 2 : 1)
+        isActive: player.id === nextPlayerId
       }))
     );
   };
@@ -204,6 +244,50 @@ export default function GameBoard() {
     return baseClasses.join(' ');
   };
 
+
+  const resetGame = () => {
+    setCells(createInitialCells());
+    setDiceValues(null);
+    setIsRolling(false);
+    setCurrentPlayerId(1);
+    setPlaceState({
+      isPlacing: false,
+      startCell: null,
+      currentCell: null,
+      figureShape: null,
+    });
+    setGameState({
+      isGameOver: false,
+      winner: null,
+    });
+    setPlayers([
+      { id: 1, name: 'Player 1', isActive: true, color: 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)' },
+      { id: 2, name: 'Player 2', isActive: false, color: 'linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%)' }
+    ]);
+  };
+
+  if (gameState.isGameOver) {
+    return (
+      <div className={styles.gameContainer}>
+        <div className={styles.gameOverScreen}>
+          <h1 className={styles.gameOverTitle}>Игра окончена!</h1>
+          <div className={styles.winnerMessage}>
+            {gameState.winner ? (
+              <>
+                <h2>Победитель: Игрок {gameState.winner}</h2>
+                <div className={styles.winnerColor} style={{ background: players.find(p => p.id === gameState.winner)?.color }}></div>
+              </>
+            ) : (
+              <h2>Ничья!</h2>
+            )}
+          </div>
+          <button className={styles.resetButton} onClick={resetGame}>
+            Новая игра
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.gameContainer}>
